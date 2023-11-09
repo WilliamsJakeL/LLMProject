@@ -13,7 +13,7 @@ from torch.distributed import init_process_group, destroy_process_group
 
 from model import GPTConfig, GPT
 
-train_data = np.memmap('data/openwebtext/train.bin', dtype=np.uint16, mode='r')
+import gc
 
 enc = tiktoken.get_encoding("gpt2")
 def process(example):
@@ -38,9 +38,15 @@ batch_size = 10000
 batches = math.floor(9035582489/batch_size)
 m, m_sq = 0, 0
 for i in tqdm(range(batches)):
-    wte_OWT = wte_embed(torch.from_numpy((train_data[i*batch_size:(i+1)*batch_size]).astype(np.int64)))
-    m = ((i*m) + torch.mean(wte_OWT))/(i+1)
-    m_sq = ((i*m_sq) + torch.mean(wte_OWT**2))/(i+1)
+    with torch.no_grad():
+        train_data = np.memmap('data/openwebtext/train.bin', dtype=np.uint16, mode='r')
+        chunk = train_data[i*batch_size:(i+1)*batch_size]
+        z = torch.from_numpy((chunk).astype(np.int64))
+        wte_OWT = wte_embed(z)
+        m = ((i*m) + torch.mean(wte_OWT))/(i+1)
+        m_sq = ((i*m_sq) + torch.mean(wte_OWT**2))/(i+1)
+        del wte_OWT, z, chunk, train_data
+        gc.collect()
 #     m += 1
 wte_OWT = wte_embed(torch.from_numpy((train_data[i*batch_size:]).astype(np.int64)))
 m = ((batch_size*i*m) + torch.sum(wte_OWT))/len(train_data)
