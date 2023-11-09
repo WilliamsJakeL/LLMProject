@@ -36,22 +36,25 @@ wte_embed.weight = wte
 ## Find mean of embedding
 batch_size = 10000
 batches = math.floor(9035582489/batch_size)
-m = 0
+m, m_sq = 0, 0
 for i in tqdm(range(batches)):
     wte_OWT = wte_embed(torch.from_numpy((train_data[i*batch_size:(i+1)*batch_size]).astype(np.int64)))
     m = ((i*m) + torch.mean(wte_OWT))/(i+1)
+    m_sq = ((i*m_sq) + torch.mean(wte_OWT**2))/(i+1)
 #     m += 1
 wte_OWT = wte_embed(torch.from_numpy((train_data[i*batch_size:]).astype(np.int64)))
 m = ((batch_size*i*m) + torch.sum(wte_OWT))/len(train_data)
-print(m)
+m_sq = ((batch_size*i*m_sq) + torch.sum(wte_OWT**2))/len(train_data)
+print("Mean:", m.item())
+print("Std:", m_sq.item() - m.item()**2)
 
 ## Find mean of embedding
-std = 0
-for i in tqdm(range(batches)):
-    wte_OWT = wte_embed(torch.from_numpy((train_data[i*batch_size:(i+1)*batch_size]).astype(np.int64)))
-    std = ((i*std) + torch.mean((wte_OWT-m)**2))/(i+1)
-#     m += 1
-wte_OWT = wte_embed(torch.from_numpy((train_data[i*batch_size:]).astype(np.int64)))
-std = ((batch_size*i*m) + torch.sum((wte_OWT-m)**2))/len(train_data)
-std = torch.sqrt(std).item()
-print(std)
+# std = 0
+# for i in tqdm(range(batches)):
+#     wte_OWT = wte_embed(torch.from_numpy((train_data[i*batch_size:(i+1)*batch_size]).astype(np.int64)))
+#     std = ((i*std) + torch.mean((wte_OWT-m)**2))/(i+1)
+# #     m += 1
+# wte_OWT = wte_embed(torch.from_numpy((train_data[i*batch_size:]).astype(np.int64)))
+# std = ((batch_size*i*m) + torch.sum((wte_OWT-m)**2))/len(train_data)
+# std = torch.sqrt(std).item()
+# print(std)
