@@ -52,7 +52,7 @@ wte_OWT = wte_embed(torch.from_numpy((train_data[i*batch_size:]).astype(np.int64
 m = ((batch_size*i*m) + torch.sum(wte_OWT))/len(train_data)
 m_sq = ((batch_size*i*m_sq) + torch.sum(wte_OWT**2))/len(train_data)
 print("Mean:", m.item())
-print("Std:", m_sq.item() - m.item()**2)
+print("Std:", np.sqrt(m_sq.item() - m.item()**2))
 
 ## Find mean of embedding
 # std = 0
