@@ -15,6 +15,9 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
+
+
+
 class LayerNorm(nn.Module):
     """ LayerNorm but with an optional bias. PyTorch doesn't support simply bias=False """
 
@@ -41,13 +44,16 @@ class CausalSelfAttention(nn.Module):
         self.n_head = config.n_head
         self.n_embd = config.n_embd
         self.dropout = config.dropout
+        self.kernel_config = config.kernel_config
         # flash attention make GPU go brrrrr but support is only in PyTorch >= 2.0
-        self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
-        if not self.flash:
-            print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
+
+        #TODO commented out self.flash so manual attention
+     #   self.flash = hasattr(torch.nn.functional, 'scaled_dot_product_attention')
+      #  if not self.flash:
+        #    print("WARNING: using slow attention. Flash Attention requires PyTorch >= 2.0")
             # causal mask to ensure that attention is only applied to the left in the input sequence
-            self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size))
-                                        .view(1, 1, config.block_size, config.block_size))
+        self.register_buffer("bias", torch.tril(torch.ones(config.block_size, config.block_size))
+                                    .view(1, 1, config.block_size, config.block_size))
 
     def forward(self, x):
         B, T, C = x.size() # batch size, sequence length, embedding dimensionality (n_embd)
@@ -59,16 +65,38 @@ class CausalSelfAttention(nn.Module):
         v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
 
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
-        if self.flash:
-            # efficient attention using Flash Attention CUDA kernels
-            y = torch.nn.functional.scaled_dot_product_attention(q, k, v, attn_mask=None, dropout_p=self.dropout if self.training else 0, is_causal=True)
+
+        # polynomial
+        if self.kernel_config==1:
+            c = 1 #TODO: adjust c, d
+            d = 4
+            att =  ((q @ k.transpose(-2, -1) + c)**d) * (1.0 / math.sqrt(k.size(-1))) 
+        # periodic
+        elif self.kernel_config==2:
+            p = 10 #TODO: adjust p, l, sigma
+            l = 1
+            sigma = 1
+            kernel_value = (sigma**2) * torch.exp(-2 * (torch.sin((math.pi * (q - k) / p)) ** 2) / (l**2))
+            #TODO note linear projection on last 2 dimensions applied to fix torch size for model
+            (a,b) = k.size()[-2:]
+            linear_projection = torch.nn.Linear(b, a)
+            att = linear_projection(kernel_value)    
+        # gaussian
+        elif self.kernel_config==3:
+            sigma = 1 #TODO: adjust l, sigma
+            l = 1
+            kernel_value = (sigma**2) * torch.exp(((q - k) ** 2) / (-2* (l**2)))
+            #TODO note linear projection on last 2 dimensions applied to fix torch size for model
+            (a,b) = k.size()[-2:]
+            linear_projection = torch.nn.Linear(b, a)
+            att = linear_projection(kernel_value) 
+        # baseline (0, note that with no flags this will run)
         else:
-            # manual implementation of attention
-            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
-            att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
-            att = F.softmax(att, dim=-1)
-            att = self.attn_dropout(att)
-            y = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
+            att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))                           
+        att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float('-inf'))
+        att = F.softmax(att, dim=-1)
+        att = self.attn_dropout(att)
+        y = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)}}
         y = y.transpose(1, 2).contiguous().view(B, T, C) # re-assemble all head outputs side by side
 
         # output projection
@@ -113,7 +141,10 @@ class GPTConfig:
     n_head: int = 12
     n_embd: int = 768
     dropout: float = 0.0
-    bias: bool = True # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
+    bias: bool = True
+    kernel_config: int = 0 #TODO ADD ME
+    
+     # True: bias in Linears and LayerNorms, like GPT-2. False: a bit better and faster
 
 class GPT(nn.Module):
 

@@ -6,3 +6,4 @@ eval_iters = 500 # use more iterations to get good estimate
 eval_only = True
 wandb_log = False
 init_from = 'gpt2'
+kernel_config= 0 #TODO ADD ME
