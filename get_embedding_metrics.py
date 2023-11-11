@@ -48,6 +48,7 @@ for i in tqdm(range(batches)):
         del wte_OWT, z, chunk, train_data
         gc.collect()
 #     m += 1
+train_data = np.memmap('data/openwebtext/train.bin', dtype=np.uint16, mode='r')
 wte_OWT = wte_embed(torch.from_numpy((train_data[i*batch_size:]).astype(np.int64)))
 m = ((batch_size*i*m) + torch.sum(wte_OWT))/len(train_data)
 m_sq = ((batch_size*i*m_sq) + torch.sum(wte_OWT**2))/len(train_data)
