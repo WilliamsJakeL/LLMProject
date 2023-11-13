@@ -1,6 +1,13 @@
 # Select Kernal
 Model run configurations for our 4 tests 
 
+# Preparing OpenWeb data (first)
+```
+$ python data/openwebtext/prepare.py
+```
+
+The following configurations can be ran in parallel 
+
 # Baseline (Dot Product)
 ```
 $ python train.py config/train_shakespeare_char.py --device=cpu --compile=False --eval_iters=20 --log_interval=1 --block_size=64 --batch_size=12 --n_layer=4 --n_head=4 --n_embd=128 --max_iters=2000 --lr_decay_iters=2000 --dropout=0.0 --kernel_config=0
