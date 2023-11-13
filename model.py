@@ -68,12 +68,12 @@ class CausalSelfAttention(nn.Module):
 
         # polynomial
         if self.kernel_config==1:
-            c = 1 #TODO: adjust c, d
-            d = 4
+            c = 1 
+            d = 2
             att =  ((q @ k.transpose(-2, -1) + c)**d) * (1.0 / math.sqrt(k.size(-1))) 
         # periodic
         elif self.kernel_config==2:
-            p = 10 #TODO: adjust p, l, sigma
+            p = 10
             l = 1
             sigma = 1
             kernel_value = (sigma**2) * torch.exp(-2 * (torch.sin((math.pi * (q - k) / p)) ** 2) / (l**2))
@@ -83,8 +83,8 @@ class CausalSelfAttention(nn.Module):
             att = linear_projection(kernel_value)    
         # gaussian
         elif self.kernel_config==3:
-            sigma = 1 #TODO: adjust l, sigma
-            l = 1
+            sigma = 1 
+            l = 2
             kernel_value = (sigma**2) * torch.exp(((q - k) ** 2) / (-2* (l**2)))
             #TODO note linear projection on last 2 dimensions applied to fix torch size for model
             (a,b) = k.size()[-2:]
