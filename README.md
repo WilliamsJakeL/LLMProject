@@ -1,5 +1,5 @@
 # Select Kernal
-Example usage for our training sets
+Model run configurations for our 4 tests 
 
 # Baseline (Dot Product)
 ```
