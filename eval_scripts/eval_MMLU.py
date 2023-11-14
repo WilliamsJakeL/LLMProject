@@ -11,6 +11,7 @@ import pickle
 from contextlib import nullcontext
 import torch
 import tiktoken
+
 from model import GPTConfig, GPT
 
 # -----------------------------------------------------------------------------
@@ -35,7 +36,7 @@ device_type = 'cuda' if 'cuda' in device else 'cpu' # for later use in torch.aut
 ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
 
-args = {'ntrain': 2, 'data_dir': '../data/MMLU/'}
+args = {'ntrain': 2, 'data_dir': 'data/MMLU/data/'}
 
 # model
 if init_from == 'resume':
@@ -85,7 +86,7 @@ choices = ["A", "B", "C", "D"]
 def crop_prompt(prompt: str):
     global enc
 
-    cropped_prompt = decode(encode(prompt)[:model.block_size])
+    cropped_prompt = decode(encode(prompt)[:model.config.block_size])
     return cropped_prompt
 
 def crop(s):
@@ -131,7 +132,7 @@ def eval(args, subject, model, dev_df, test_df):
 
     for i in range(test_df.shape[0]):
         # get prompt and make sure it fits
-        k = args.ntrain
+        k = args['ntrain']
         prompt_end = format_example(test_df, i, include_answer=False)
         train_prompt = gen_prompt(dev_df, subject, k)
         prompt = train_prompt + prompt_end
@@ -143,9 +144,9 @@ def eval(args, subject, model, dev_df, test_df):
 
         label = test_df.iloc[i, test_df.shape[1]-1]
 
-        print(prompt)
-        raise Exception("Stop")
-        c = model.generate(prompt, 1)
+        prompt_ids = encode(prompt)
+        x = (torch.tensor(prompt_ids, dtype=torch.long, device=device)[None, ...]) 
+        c = model.get_next_token_options(x)
 
         # while True:
         #     try:
@@ -162,13 +163,13 @@ def eval(args, subject, model, dev_df, test_df):
         #         print("pausing")
         #         time.sleep(1)
         #         continue
-
         lprobs = []
         for ans in answers:
             try:
-                lprobs.append(c["choices"][0]["logprobs"]["top_logprobs"][-1][" {}".format(ans)])
-            except:
-                print("Warning: {} not found. Artificially adding log prob of -100.".format(ans))
+                # lprobs.append(c["choices"][0]["logprobs"]["top_logprobs"][-1][" {}".format(ans)])
+                lprobs.append(c[0,encode(ans)].item())
+            except Exception as e:
+                print("Warning: {} not found with error {}. Artificially adding log prob of -100.".format(ans, e))
                 lprobs.append(-100)
         pred = {0: "A", 1: "B", 2: "C", 3: "D"}[np.argmax(lprobs)]
         probs = softmax(np.array(lprobs))
@@ -186,12 +187,13 @@ def eval(args, subject, model, dev_df, test_df):
     return cors, acc, all_probs
 
 # Get subjects
-subjects = sorted([f.split("_test.csv")[0] for f in os.listdir(os.path.join(args.data_dir, "test")) if "_test.csv" in f])
-print(subjects)
-raise Exception("f")
+subjects = sorted([f.split("_test.csv")[0] for f in os.listdir(os.path.join(args['data_dir'], "test")) if "_test.csv" in f])
 
 # Take the test for each subject
 with torch.no_grad():
     with ctx:
-        for k in range(questions):
+        for i, subject in enumerate(subjects):
+            dev_df = pd.read_csv(os.path.join(args['data_dir'], "dev", subject + "_dev.csv"), header=None)[:args['ntrain']]
+            test_df = pd.read_csv(os.path.join(args['data_dir'], "test", subject + "_test.csv"), header=None)
+
             cors, acc, all_probs = eval(args, subject, model, dev_df, test_df)
