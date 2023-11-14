@@ -163,16 +163,13 @@ def eval(args, subject, model, dev_df, test_df):
         #         print("pausing")
         #         time.sleep(1)
         #         continue
-        print(c.shape)
-        print(decode(answers))
-        raise Exception("stop")
         lprobs = []
         for ans in answers:
             try:
                 # lprobs.append(c["choices"][0]["logprobs"]["top_logprobs"][-1][" {}".format(ans)])
-                lprobs.append(c[decode(ans)])
-            except:
-                print("Warning: {} not found. Artificially adding log prob of -100.".format(ans))
+                lprobs.append(c[0,encode(ans)].item())
+            except Exception as e:
+                print("Warning: {} not found with error {}. Artificially adding log prob of -100.".format(ans, e))
                 lprobs.append(-100)
         pred = {0: "A", 1: "B", 2: "C", 3: "D"}[np.argmax(lprobs)]
         probs = softmax(np.array(lprobs))
