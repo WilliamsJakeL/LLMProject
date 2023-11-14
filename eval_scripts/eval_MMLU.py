@@ -4,6 +4,9 @@
 Sample from a trained model
 """
 import os
+import numpy as np
+import pandas as pd
+import time
 import pickle
 from contextlib import nullcontext
 import torch
@@ -31,6 +34,8 @@ torch.backends.cudnn.allow_tf32 = True # allow tf32 on cudnn
 device_type = 'cuda' if 'cuda' in device else 'cpu' # for later use in torch.autocast
 ptdtype = {'float32': torch.float32, 'bfloat16': torch.bfloat16, 'float16': torch.float16}[dtype]
 ctx = nullcontext() if device_type == 'cpu' else torch.amp.autocast(device_type=device_type, dtype=ptdtype)
+
+args = {'ntrain': 2, 'data_dir': '../data/MMLU/'}
 
 # model
 if init_from == 'resume':
@@ -74,23 +79,119 @@ else:
     encode = lambda s: enc.encode(s, allowed_special={"<|endoftext|>"})
     decode = lambda l: enc.decode(l)
 
-# encode the beginning of the prompt
-if start.startswith('FILE:'):
-    with open(start[5:], 'r', encoding='utf-8') as f:
-        start = f.read()
-start_ids = encode(start)
-x = (torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...])
+# Copy some code in from MMLU test GitHub
+choices = ["A", "B", "C", "D"]
 
-## Load in data and get test questions
-questions = []
+def crop_prompt(prompt: str):
+    global enc
 
-# Take the test
+    cropped_prompt = decode(encode(prompt)[:model.block_size])
+    return cropped_prompt
+
+def crop(s):
+    prompt = crop_prompt(s)
+    return prompt
+
+def softmax(x):
+    z = x - max(x)
+    numerator = np.exp(z)
+    denominator = np.sum(numerator)
+    softmax = numerator/denominator
+    return softmax
+
+def format_subject(subject):
+    l = subject.split("_")
+    s = ""
+    for entry in l:
+        s += " " + entry
+    return s
+
+def format_example(df, idx, include_answer=True):
+    prompt = df.iloc[idx, 0]
+    k = df.shape[1] - 2
+    for j in range(k):
+        prompt += "\n{}. {}".format(choices[j], df.iloc[idx, j+1])
+    prompt += "\nAnswer:"
+    if include_answer:
+        prompt += " {}\n\n".format(df.iloc[idx, k + 1])
+    return prompt
+
+def gen_prompt(train_df, subject, k=-1):
+    prompt = "The following are multiple choice questions (with answers) about {}.\n\n".format(format_subject(subject))
+    if k == -1:
+        k = train_df.shape[0]
+    for i in range(k):
+        prompt += format_example(train_df, i)
+    return prompt
+
+def eval(args, subject, model, dev_df, test_df):
+    cors = []
+    all_probs = []
+    answers = choices[:test_df.shape[1]-2]
+
+    for i in range(test_df.shape[0]):
+        # get prompt and make sure it fits
+        k = args.ntrain
+        prompt_end = format_example(test_df, i, include_answer=False)
+        train_prompt = gen_prompt(dev_df, subject, k)
+        prompt = train_prompt + prompt_end
+
+        while crop(prompt) != prompt:
+            k -= 1
+            train_prompt = gen_prompt(dev_df, subject, k)
+            prompt = train_prompt + prompt_end
+
+        label = test_df.iloc[i, test_df.shape[1]-1]
+
+        print(prompt)
+        raise Exception("Stop")
+        c = model.generate(prompt, 1)
+
+        # while True:
+        #     try:
+        #         c = openai.Completion.create(
+        #             engine=engine,
+        #             prompt=prompt,
+        #             max_tokens=1,
+        #             logprobs=100,
+        #             temperature=0,
+        #             echo=True
+        #         )
+        #         break
+        #     except:
+        #         print("pausing")
+        #         time.sleep(1)
+        #         continue
+
+        lprobs = []
+        for ans in answers:
+            try:
+                lprobs.append(c["choices"][0]["logprobs"]["top_logprobs"][-1][" {}".format(ans)])
+            except:
+                print("Warning: {} not found. Artificially adding log prob of -100.".format(ans))
+                lprobs.append(-100)
+        pred = {0: "A", 1: "B", 2: "C", 3: "D"}[np.argmax(lprobs)]
+        probs = softmax(np.array(lprobs))
+
+        cor = pred == label
+        cors.append(cor)
+        all_probs.append(probs)
+
+    acc = np.mean(cors)
+    cors = np.array(cors)
+
+    all_probs = np.array(all_probs)
+    print("Average accuracy {:.3f} - {}".format(acc, subject))
+
+    return cors, acc, all_probs
+
+# Get subjects
+subjects = sorted([f.split("_test.csv")[0] for f in os.listdir(os.path.join(args.data_dir, "test")) if "_test.csv" in f])
+print(subjects)
+raise Exception("f")
+
+# Take the test for each subject
 with torch.no_grad():
     with ctx:
         for k in range(questions):
-            # Use model.generate with input from 
-            y = model.generate(x, max_new_tokens, temperature=temperature, top_k=top_k)
-            # Determine if answer was correct
-            print(decode(y[0].tolist()))
-            # Keep statistics.
-            print('---------------')
+            cors, acc, all_probs = eval(args, subject, model, dev_df, test_df)
