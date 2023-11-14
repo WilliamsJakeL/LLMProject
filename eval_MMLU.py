@@ -86,7 +86,7 @@ choices = ["A", "B", "C", "D"]
 def crop_prompt(prompt: str):
     global enc
 
-    cropped_prompt = decode(encode(prompt)[:model.block_size])
+    cropped_prompt = decode(encode(prompt)[:model.config.block_size])
     return cropped_prompt
 
 def crop(s):
@@ -144,9 +144,9 @@ def eval(args, subject, model, dev_df, test_df):
 
         label = test_df.iloc[i, test_df.shape[1]-1]
 
-        print(prompt)
-        raise Exception("Stop")
-        c = model.generate(prompt, 1)
+        prompt_ids = encode(prompt)
+        x = (torch.tensor(prompt_ids, dtype=torch.long, device=device)[None, ...]) 
+        c = model.get_next_token_options(x)
 
         # while True:
         #     try:
@@ -163,11 +163,14 @@ def eval(args, subject, model, dev_df, test_df):
         #         print("pausing")
         #         time.sleep(1)
         #         continue
-
+        print(c.shape)
+        print(decode(answers))
+        raise Exception("stop")
         lprobs = []
         for ans in answers:
             try:
-                lprobs.append(c["choices"][0]["logprobs"]["top_logprobs"][-1][" {}".format(ans)])
+                # lprobs.append(c["choices"][0]["logprobs"]["top_logprobs"][-1][" {}".format(ans)])
+                lprobs.append(c[decode(ans)])
             except:
                 print("Warning: {} not found. Artificially adding log prob of -100.".format(ans))
                 lprobs.append(-100)
