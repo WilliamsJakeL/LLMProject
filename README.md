@@ -31,7 +31,7 @@ $ torchrun --standalone --nproc_per_node=8 train.py config/train_gpt2.py --kerne
 
 ## Evaluate GPT2 model through AI2 Reasoning Challenge (ARC)
 <ol>
-  <li> Download ARC dataset from [this link](https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Feb2018.zip).</li>
+  <li> Download ARC dataset from <a href="https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Feb2018.zip">this link</a>.</li>
   <li> Unzip the file, (rename to <code>ARC-V1-Feb2018-2</code>,) and move the folder to <code>data/arc</code>. </li>
   <li> Tokenize the ARC Corpus. <br>
     <code> $ python data/arc/prepare.py </code> </li>
