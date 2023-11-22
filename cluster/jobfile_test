@@ -14,4 +14,4 @@
 
 pip install torch numpy transformers datasets tiktoken wandb tqdm
 
-python train.py config/finetune_shakespeare.py
+python train.py config/finetune_shakespeare.py --out_dir=/net/scratch/williamsjl/LLMclass/shakespeare_test
