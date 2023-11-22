@@ -1,0 +1,102 @@
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: torch in /home/williamsjl/.local/lib/python3.10/site-packages (2.1.1)
+Requirement already satisfied: numpy in /home/williamsjl/.local/lib/python3.10/site-packages (1.26.2)
+Requirement already satisfied: transformers in /home/williamsjl/.local/lib/python3.10/site-packages (4.35.2)
+Requirement already satisfied: datasets in /home/williamsjl/.local/lib/python3.10/site-packages (2.15.0)
+Requirement already satisfied: tiktoken in /home/williamsjl/.local/lib/python3.10/site-packages (0.5.1)
+Requirement already satisfied: wandb in /home/williamsjl/.local/lib/python3.10/site-packages (0.16.0)
+Requirement already satisfied: tqdm in /opt/conda/lib/python3.10/site-packages (4.65.0)
+Requirement already satisfied: triton==2.1.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (2.1.0)
+Requirement already satisfied: jinja2 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (3.1.2)
+Requirement already satisfied: nvidia-cufft-cu12==11.0.2.54 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (11.0.2.54)
+Requirement already satisfied: nvidia-cusparse-cu12==12.1.0.106 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (12.1.0.106)
+Requirement already satisfied: nvidia-nccl-cu12==2.18.1 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (2.18.1)
+Requirement already satisfied: sympy in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (1.12)
+Requirement already satisfied: nvidia-cusolver-cu12==11.4.5.107 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (11.4.5.107)
+Requirement already satisfied: nvidia-nvtx-cu12==12.1.105 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (12.1.105)
+Requirement already satisfied: nvidia-cuda-cupti-cu12==12.1.105 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (12.1.105)
+Requirement already satisfied: filelock in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (3.13.1)
+Requirement already satisfied: nvidia-cuda-runtime-cu12==12.1.105 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (12.1.105)
+Requirement already satisfied: typing-extensions in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (4.8.0)
+Requirement already satisfied: networkx in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (3.2.1)
+Requirement already satisfied: nvidia-cublas-cu12==12.1.3.1 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (12.1.3.1)
+Requirement already satisfied: nvidia-cuda-nvrtc-cu12==12.1.105 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (12.1.105)
+Requirement already satisfied: fsspec in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (2023.10.0)
+Requirement already satisfied: nvidia-cudnn-cu12==8.9.2.26 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (8.9.2.26)
+Requirement already satisfied: nvidia-curand-cu12==10.3.2.106 in /home/williamsjl/.local/lib/python3.10/site-packages (from torch) (10.3.2.106)
+Requirement already satisfied: nvidia-nvjitlink-cu12 in /home/williamsjl/.local/lib/python3.10/site-packages (from nvidia-cusolver-cu12==11.4.5.107->torch) (12.3.101)
+Requirement already satisfied: safetensors>=0.3.1 in /home/williamsjl/.local/lib/python3.10/site-packages (from transformers) (0.4.0)
+Requirement already satisfied: packaging>=20.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from transformers) (23.2)
+Requirement already satisfied: tokenizers<0.19,>=0.14 in /home/williamsjl/.local/lib/python3.10/site-packages (from transformers) (0.15.0)
+Requirement already satisfied: regex!=2019.12.17 in /home/williamsjl/.local/lib/python3.10/site-packages (from transformers) (2023.10.3)
+Requirement already satisfied: pyyaml>=5.1 in /home/williamsjl/.local/lib/python3.10/site-packages (from transformers) (6.0.1)
+Requirement already satisfied: requests in /opt/conda/lib/python3.10/site-packages (from transformers) (2.28.1)
+Requirement already satisfied: huggingface-hub<1.0,>=0.16.4 in /home/williamsjl/.local/lib/python3.10/site-packages (from transformers) (0.19.4)
+Requirement already satisfied: dill<0.3.8,>=0.3.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from datasets) (0.3.7)
+Requirement already satisfied: multiprocess in /home/williamsjl/.local/lib/python3.10/site-packages (from datasets) (0.70.15)
+Requirement already satisfied: pyarrow>=8.0.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from datasets) (14.0.1)
+Requirement already satisfied: pandas in /home/williamsjl/.local/lib/python3.10/site-packages (from datasets) (2.1.3)
+Requirement already satisfied: pyarrow-hotfix in /home/williamsjl/.local/lib/python3.10/site-packages (from datasets) (0.6)
+Requirement already satisfied: aiohttp in /home/williamsjl/.local/lib/python3.10/site-packages (from datasets) (3.9.0)
+Requirement already satisfied: xxhash in /home/williamsjl/.local/lib/python3.10/site-packages (from datasets) (3.4.1)
+Requirement already satisfied: psutil>=5.0.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from wandb) (5.9.6)
+Requirement already satisfied: sentry-sdk>=1.0.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from wandb) (1.36.0)
+Requirement already satisfied: docker-pycreds>=0.4.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from wandb) (0.4.0)
+Requirement already satisfied: setproctitle in /home/williamsjl/.local/lib/python3.10/site-packages (from wandb) (1.3.3)
+Requirement already satisfied: appdirs>=1.4.3 in /home/williamsjl/.local/lib/python3.10/site-packages (from wandb) (1.4.4)
+Requirement already satisfied: Click!=8.0.0,>=7.1 in /home/williamsjl/.local/lib/python3.10/site-packages (from wandb) (8.1.7)
+Requirement already satisfied: GitPython!=3.1.29,>=1.0.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from wandb) (3.1.40)
+Requirement already satisfied: protobuf!=4.21.0,<5,>=3.19.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from wandb) (4.25.1)
+Requirement already satisfied: setuptools in /opt/conda/lib/python3.10/site-packages (from wandb) (65.6.3)
+Requirement already satisfied: six>=1.4.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from docker-pycreds>=0.4.0->wandb) (1.16.0)
+Requirement already satisfied: multidict<7.0,>=4.5 in /home/williamsjl/.local/lib/python3.10/site-packages (from aiohttp->datasets) (6.0.4)
+Requirement already satisfied: yarl<2.0,>=1.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from aiohttp->datasets) (1.9.3)
+Requirement already satisfied: async-timeout<5.0,>=4.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from aiohttp->datasets) (4.0.3)
+Requirement already satisfied: frozenlist>=1.1.1 in /home/williamsjl/.local/lib/python3.10/site-packages (from aiohttp->datasets) (1.4.0)
+Requirement already satisfied: attrs>=17.3.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from aiohttp->datasets) (23.1.0)
+Requirement already satisfied: aiosignal>=1.1.2 in /home/williamsjl/.local/lib/python3.10/site-packages (from aiohttp->datasets) (1.3.1)
+Requirement already satisfied: gitdb<5,>=4.0.1 in /home/williamsjl/.local/lib/python3.10/site-packages (from GitPython!=3.1.29,>=1.0.0->wandb) (4.0.11)
+Requirement already satisfied: idna<4,>=2.5 in /opt/conda/lib/python3.10/site-packages (from requests->transformers) (3.4)
+Requirement already satisfied: certifi>=2017.4.17 in /opt/conda/lib/python3.10/site-packages (from requests->transformers) (2022.12.7)
+Requirement already satisfied: urllib3<1.27,>=1.21.1 in /opt/conda/lib/python3.10/site-packages (from requests->transformers) (1.26.15)
+Requirement already satisfied: charset-normalizer<3,>=2 in /opt/conda/lib/python3.10/site-packages (from requests->transformers) (2.0.4)
+Requirement already satisfied: MarkupSafe>=2.0 in /home/williamsjl/.local/lib/python3.10/site-packages (from jinja2->torch) (2.1.3)
+Requirement already satisfied: pytz>=2020.1 in /home/williamsjl/.local/lib/python3.10/site-packages (from pandas->datasets) (2023.3.post1)
+Requirement already satisfied: tzdata>=2022.1 in /home/williamsjl/.local/lib/python3.10/site-packages (from pandas->datasets) (2023.3)
+Requirement already satisfied: python-dateutil>=2.8.2 in /home/williamsjl/.local/lib/python3.10/site-packages (from pandas->datasets) (2.8.2)
+Requirement already satisfied: mpmath>=0.19 in /home/williamsjl/.local/lib/python3.10/site-packages (from sympy->torch) (1.3.0)
+Requirement already satisfied: smmap<6,>=3.0.1 in /home/williamsjl/.local/lib/python3.10/site-packages (from gitdb<5,>=4.0.1->GitPython!=3.1.29,>=1.0.0->wandb) (5.0.1)
+Overriding config with config/finetune_shakespeare.py:
+import time
+
+out_dir = 'out-shakespeare'
+eval_interval = 5
+eval_iters = 40
+wandb_log = False # feel free to turn on
+wandb_project = 'shakespeare'
+wandb_run_name = 'ft-' + str(time.time())
+
+dataset = 'shakespeare'
+init_from = 'gpt2-xl' # this is the largest GPT-2 model
+
+# only save checkpoints if the validation loss improves
+always_save_checkpoint = False
+
+# the number of examples per iter:
+# 1 batch_size * 32 grad_accum * 1024 tokens = 32,768 tokens/iter
+# shakespeare has 301,966 tokens, so 1 epoch ~= 9.2 iters
+batch_size = 1
+gradient_accumulation_steps = 32
+max_iters = 20
+
+# finetune at constant LR
+learning_rate = 3e-5
+decay_lr = False
+
+tokens per iteration will be: 32,768
+this is kernal config: 0
+Initializing from OpenAI GPT-2 weights: gpt2-xl
+loading weights from pretrained gpt: gpt2-xl
+forcing vocab_size=50257, block_size=1024, bias=True
+overriding dropout rate to 0.0
+number of parameters: 1555.97M

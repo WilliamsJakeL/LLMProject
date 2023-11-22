@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH --job-name=LLMclass:shakespeare_test    # Job name
+#SBATCH --gres=gpu:1
+#SBATCH --partition=general
+#SBATCH --ntasks=1                    # Run on a single CPU
+#SBATCH --cpus-per-task=14
+#SBATCH --mem=48g                     # Job memory request
+#SBATCH --time=4:00:00               # Time limit hrs:min:sec
+#SBATCH --requeue
+#SBATCH --dependency=singleton
+#SBATCH --open-mode=append
+#SBATCH --output=cluster/shakespeare_test_log.out   # Standard output 
+#SBATCH --error=cluster/shakespeare_test_log.err   # Standard error
+
+pip install torch numpy transformers datasets tiktoken wandb tqdm
+
+python train.py config/finetune_shakespeare.py
