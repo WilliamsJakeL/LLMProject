@@ -50,3 +50,22 @@ $ torchrun --standalone --nproc_per_node=8 train.py config/train_gpt2.py --kerne
     </ol>
   </li>
 </ol>
+
+
+## Evaluate GPT2 model through EN-FR translation and BLEU
+  <li> Tokenize the EN-FR dataset <br>
+    <code> $ python data/en-fr/prepare.py </code> </li>
+
+  <li>Evaluate the models one by one:
+    <ol>
+      <li> Fine-tuning the GPT2 model.<br>
+        <code> $ python train.py config/finetune_en-fr.py --init_from=/// </code>
+      </li>
+      <li> Run evaluation.<br>
+        <code> $ python eval_BLEU.py </code> </li>
+      </li>
+      <li>
+        Evaluate the next model.
+      </li>
+    </ol>
+  </li>
