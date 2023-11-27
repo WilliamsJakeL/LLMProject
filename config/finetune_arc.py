@@ -1,6 +1,8 @@
 import time
 
-out_dir = 'out-arc'
+
+kernel_config=0
+out_dir = f'out-arc_kernel_{kernel_config}'
 eval_interval = 5
 eval_iters = 40
 wandb_log = False # feel free to turn on
