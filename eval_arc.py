@@ -6,8 +6,10 @@ import tiktoken
 from model import GPTConfig, GPT
 
 # -----------------------------------------------------------------------------
-init_from = 'out-arc' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
-out_dir = 'out' # ignored if init_from is not 'resume'
+
+kernel_config=0
+init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
+out_dir = f'out-arc_kernel_{kernel_config}' # ignored if init_from is not 'resume'
 start = "\n" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
 
 
@@ -98,12 +100,12 @@ accuracy = {"easy": {"total": 0, "correct": 0}
 def ans(question):
     """ Input a question, return the answer (one character) from GPT2 model """
     question = question + ". The answer (one word) is:"
-    start_id = encode(question)
+    start_ids = encode(question)
     x = (torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...])
     with torch.no_grad():
         with ctx:
             y = model.generate(x, 1, temperature=temperature, top_k=top_k)
-    answer = decode(y[0].tolist())
+    answer = decode(y[0].tolist())[-1]
     return answer.upper()
 
 
