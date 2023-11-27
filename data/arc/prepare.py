@@ -1,6 +1,27 @@
+# Download the ARC Dataset
+print("Downloading the ARC dataset")
+
+import requests
+import zipfile
+import os
+
+url = 'https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Feb2018.zip' 
+local_filename = "ARC-V1-Feb2018.zip"
+# Download the file
+r = requests.get(url, stream=True)
+with open(local_filename, 'wb') as f:
+    for chunk in r.iter_content(chunk_size=8192): 
+        f.write(chunk)
+# Unzip the folder
+with zipfile.ZipFile(local_filename, 'r') as zip_ref:
+    zip_ref.extractall() 
+# Delete the zip file
+os.remove(local_filename)
+
+
+
 ## Tokenize the ARC Corpus
 print("Tokenizing the ARC Corpus.")
-
 
 # Modified from data/openwebtext/prepare.py
 input_file_path = "ARC-V1-Feb2018-2/ARC_Corpus.txt"
