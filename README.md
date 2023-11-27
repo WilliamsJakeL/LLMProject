@@ -40,7 +40,7 @@ $ torchrun --standalone --nproc_per_node=8 train.py config/train_gpt2.py --kerne
         <code> $ python train.py config/finetune_arc.py --init_from=/// --kernel_config=/// </code>
       </li>
       <li> Run evaluation.<br>
-        <code> $ python eval_arc.py </code> </li>
+        <code> $ python eval_arc.py --kernel_config=/// </code> </li>
       </li>
       <li>
         Evaluate the next model.
