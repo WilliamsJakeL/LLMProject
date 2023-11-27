@@ -99,7 +99,7 @@ accuracy = {"easy": {"total": 0, "correct": 0}
 
 def ans(question):
     """ Input a question, return the answer (one character) from GPT2 model """
-    question = question + ". The answer (one word) is:"
+    question = "The following is a multiple choice question: " + question + ". The answer (one word) is:"
     start_ids = encode(question)
     x = (torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...])
     with torch.no_grad():
