@@ -34,7 +34,7 @@ $ torchrun --standalone --nproc_per_node=8 train.py config/train_gpt2.py --kerne
   <li> Download the ARC dataset and Tokenize the ARC Corpus. <br>
     <code> $ python data/arc/prepare.py </code> </li>
 
-  <li>Evaluate the models one by one:
+  <li>Evaluate the models for each <code>kernel_config</code>:
     <ol>
       <li> Fine-tuning the GPT2 model.<br>
         <code> $ python train.py config/finetune_arc.py --init_from=/// --kernel_config=/// </code>
