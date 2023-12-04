@@ -97,30 +97,51 @@ accuracy = {"easy": {"total": 0, "correct": 0}
             }
 
 
-def ans(question):
+def generate_prompt(q, devs):
+    prompt = "The following are multiple choice questions. There is only one correct option for each question.\n\n"
+    for d in devs:
+        prompt += d[0] + "\nThe answer (one letter) is:" + d[1] +"\n\n"
+    prompt += q + "\nThe answer (one letter) is:"
+    return prompt
+
+
+def ans(question, devs):
     """ Input a question, return the answer (one character) from GPT2 model """
-    question = "The following is a multiple choice question: " + question + ". The answer (one word) is:"
-    start_ids = encode(question)
+    prompt = generate_prompt(question, devs)
+    start_ids = encode(prompt)
     x = (torch.tensor(start_ids, dtype=torch.long, device=device)[None, ...])
     with torch.no_grad():
         with ctx:
             y = model.generate(x, 1, temperature=temperature, top_k=top_k)
-    answer = decode(y[0].tolist())[-1]
-    return answer.upper()
+    answer = decode(y[0].tolist())[-1] # Last letter
+    return answer.strip().upper()
 
 
-def isCorrect(question, answer):
+def isCorrect(question, devs, answer):
     """ Input a question, return 1 if the answer is correct, else 0 """
-    return 1 if ans(question)==answer else 0
+    return 1 if ans(question, devs)==answer else 0
 
 
 def update_accuracy(dir, difficulty):
     """ Input the directory of question file, and the corresponding difficulty, update the accuracy dictionary"""
     df = pd.read_csv(dir)
-    accuracy[difficulty]["total"] += df.shape[0]
 
+    # Create devs
+    devs = []
+    
     for q, a in zip(df.question, df.AnswerKey):
-        accuracy[difficulty]["correct"] += isCorrect(q,a)
+        if a not in ["A", "B", "C", "D"]:
+            continue
+        if len(devs) == 0 # First two questions with different answers as devs
+            devs.append([q,a])
+            continue
+        if len(devs) == 1:
+            if a != dev[0][1]:
+                devs.append([q,a])
+            continue
+
+        accuracy[difficulty]["correct"] += isCorrect(q, devs, a)
+        accuracy[difficulty]["total"] += 1
 
 
 # Evaluate all files
