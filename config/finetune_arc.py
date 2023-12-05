@@ -2,7 +2,15 @@ import time
 
 
 kernel_config=0
-out_dir = f'out-arc_kernel_{kernel_config}'
+
+config_kernel = {
+    0: "baseline",
+    1: "polynomial",
+    2: "periodic",
+    3: "gaussian"
+}
+
+out_dir = 'out-arc-' + config_kernel[kernel_config]
 eval_interval = 5
 eval_iters = 40
 wandb_log = False # feel free to turn on
@@ -20,7 +28,7 @@ always_save_checkpoint = False
 # shakespeare has 301,966 tokens, so 1 epoch ~= 9.2 iters
 batch_size = 1
 gradient_accumulation_steps = 32
-max_iters = 20
+max_iters = 100 + 12000
 
 # finetune at constant LR
 learning_rate = 3e-5
