@@ -16,17 +16,19 @@ from model import GPTConfig, GPT
 
 # -----------------------------------------------------------------------------
 init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
-out_dir = 'out' # ignored if init_from is not 'resume'
+out_dir = 'out-baseline' # ignored if init_from is not 'resume'
 start = "\n" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
 max_new_tokens = 500 # number of tokens generated in each sample
 temperature = 0.8 # 1.0 = no change, < 1.0 = less random, > 1.0 = more random, in predictions
 top_k = 200 # retain only the top_k most likely tokens, clamp others to have 0 probability
 seed = 1337
-device = 'cuda' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1', etc.
+device = 'cpu' # examples: 'cpu', 'cuda', 'cuda:0', 'cuda:1', etc.
 dtype = 'bfloat16' if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else 'float16' # 'float32' or 'bfloat16' or 'float16'
 compile = False # use PyTorch 2.0 to compile the model to be faster
 exec(open('configurator.py').read()) # overrides from command line or config file
 # -----------------------------------------------------------------------------
+
+EXP_NAME = 'Baseline'
 
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
@@ -125,7 +127,7 @@ def gen_prompt(train_df, subject, k=-1):
         prompt += format_example(train_df, i)
     return prompt
 
-def eval(args, subject, model, dev_df, test_df):
+def eval_subj(args, subject, model, dev_df, test_df):
     cors = []
     all_probs = []
     answers = choices[:test_df.shape[1]-2]
@@ -188,12 +190,22 @@ def eval(args, subject, model, dev_df, test_df):
 
 # Get subjects
 subjects = sorted([f.split("_test.csv")[0] for f in os.listdir(os.path.join(args['data_dir'], "test")) if "_test.csv" in f])
-
+print("Subjects to test:", subjects)
 # Take the test for each subject
+all_cors = []
+all_acc = []
+all_probs = []
+all_subjects = []
 with torch.no_grad():
     with ctx:
         for i, subject in enumerate(subjects):
             dev_df = pd.read_csv(os.path.join(args['data_dir'], "dev", subject + "_dev.csv"), header=None)[:args['ntrain']]
             test_df = pd.read_csv(os.path.join(args['data_dir'], "test", subject + "_test.csv"), header=None)
 
-            cors, acc, all_probs = eval(args, subject, model, dev_df, test_df)
+            cors, acc, probs = eval_subj(args, subject, model, dev_df, test_df)
+            all_cors += [cors]
+            all_acc += [acc]
+            all_probs += [probs]
+            all_subjects += [subject]
+
+pickle.dump({'Subject': all_subjects, 'Correctness': all_cors, "Accuracy": all_acc, 'All Probabilities': all_probs}, open(EXP_NAME+".pickle", 'wb'))
