@@ -9,7 +9,15 @@ from model import GPTConfig, GPT
 
 kernel_config=0
 init_from = 'resume' # either 'resume' (from an out_dir) or a gpt2 variant (e.g. 'gpt2-xl')
-out_dir = f'out-arc_kernel_{kernel_config}' # ignored if init_from is not 'resume'
+
+config_kernel = {
+    0: "baseline",
+    1: "polynomial",
+    2: "periodic",
+    3: "gaussian"
+}
+
+out_dir = 'out-arc-' + config_kernel[kernel_config] # ignored if init_from is not 'resume'
 start = "\n" # or "<|endoftext|>" or etc. Can also specify a file, use as: "FILE:prompt.txt"
 
 
@@ -27,7 +35,14 @@ exec(open('configurator.py').read()) # overrides from command line or config fil
 
 
 # -----------------------------------------------------------------------------
+config_kernel = {
+    0: "baseline",
+    1: "polynomial",
+    2: "periodic",
+    3: "gaussian"
+}
 
+out_dir = 'out-arc-' + config_kernel[kernel_config]
 torch.manual_seed(seed)
 torch.cuda.manual_seed(seed)
 torch.backends.cuda.matmul.allow_tf32 = True # allow tf32 on matmul
@@ -83,6 +98,7 @@ else:
 
 
 import pandas as pd
+from tqdm import tqdm
 
 question_dirs = {"easy":["data/arc/ARC-V1-Feb2018-2/ARC-Easy/ARC-Easy-Train.csv", 
                         "data/arc/ARC-V1-Feb2018-2/ARC-Easy/ARC-Easy-Dev.csv",
@@ -92,7 +108,7 @@ question_dirs = {"easy":["data/arc/ARC-V1-Feb2018-2/ARC-Easy/ARC-Easy-Train.csv"
                              "data/arc/ARC-V1-Feb2018-2/ARC-Challenge/ARC-Challenge-Test.csv"]
                 }
 
-accuracy = {"easy": {"total": 0, "correct": 0}
+accuracy = {"easy": {"total": 0, "correct": 0},
             "challenge": {"total": 0, "correct": 0}
             }
 
@@ -113,13 +129,16 @@ def ans(question, devs):
     with torch.no_grad():
         with ctx:
             y = model.generate(x, 1, temperature=temperature, top_k=top_k)
-    answer = decode(y[0].tolist())[-1] # Last letter
-    return answer.strip().upper()
+    answer = decode(y[0].tolist())[-2:] # Last letter
+    return answer.upper()
 
 
 def isCorrect(question, devs, answer):
     """ Input a question, return 1 if the answer is correct, else 0 """
-    return 1 if ans(question, devs)==answer else 0
+    a = ans(question, devs)
+    isCharacter = a[0]
+    pre_ans = a[1]
+    return 1 if not isCharacter.isalpha() and pre_ans == answer else 0
 
 
 def update_accuracy(dir, difficulty):
@@ -128,15 +147,15 @@ def update_accuracy(dir, difficulty):
 
     # Create devs
     devs = []
-    
-    for q, a in zip(df.question, df.AnswerKey):
+    print(f"Evaluating CSV at {dir}")
+    for q, a in tqdm(zip(df.question, df.AnswerKey)):
         if a not in ["A", "B", "C", "D"]:
             continue
-        if len(devs) == 0 # First two questions with different answers as devs
+        if len(devs) == 0: # First two questions with different answers as devs
             devs.append([q,a])
             continue
         if len(devs) == 1:
-            if a != dev[0][1]:
+            if a != devs[0][1]:
                 devs.append([q,a])
             continue
 
@@ -144,8 +163,9 @@ def update_accuracy(dir, difficulty):
         accuracy[difficulty]["total"] += 1
 
 
+print(f"Now evaluating {config_kernel[kernel_config]} kernel")
 # Evaluate all files
-for difficulty, directories in question_dirs:
+for difficulty, directories in question_dirs.items():
     for dir in directories:
         update_accuracy(dir, difficulty)
 print("----------------------------")
