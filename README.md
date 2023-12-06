@@ -33,6 +33,7 @@ $ torchrun --standalone --nproc_per_node=8 train.py config/train_gpt2.py --kerne
 <ol>
   <li> Download the ARC dataset and Tokenize the ARC Corpus. <br>
     <code> $ python data/arc/prepare.py </code> </li>
+  <li> Rename the folder of each <code>ckpt.pt</code> to "out-arc-baseline", "out-arc-polynomial", "out-arc-periodic" or "out-arc-gaussian" respectively.</li>
 
   <li>Evaluate the models for each <b>kernel_config</b>:
     <ol>
