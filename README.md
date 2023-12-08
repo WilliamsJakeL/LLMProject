@@ -32,7 +32,8 @@ $ torchrun --standalone --nproc_per_node=8 train.py config/train_gpt2.py --kerne
 ## Evaluate GPT2 model through AI2 Reasoning Challenge (ARC)
 <ol>
   <li> Download the ARC dataset and Tokenize the ARC Corpus. <br>
-    <code> $ python data/arc/prepare.py </code> </li>
+    <code> $ python data/arc/prepare.py </code><br>
+  (Remark: if not properly work, download the ARC dataset from <a href="https://s3-us-west-2.amazonaws.com/ai2-website/data/ARC-V1-Feb2018.zip">this link</a> and unzip the file at <code>data/arc</code> folder. Then rerun the script.)</li>
   <li> Rename the folder of each <code>ckpt.pt</code> to "out-arc-baseline", "out-arc-polynomial", "out-arc-periodic" or "out-arc-gaussian" respectively.</li>
 
   <li>Evaluate the models for each <b>kernel_config</b>:
